@@ -39,7 +39,10 @@ sheet = service.spreadsheets()
 SCOPES2 = ['https://www.googleapis.com/auth/spreadsheets']
 KEY = 'key.json'
 SPREADSHEET_ID2 = '1UNIN1rfq_gkMHttQAvd8LRT9j4mI6QX06coQuu-BsgU'
-RANGE_NAME2 = 'Verificador!w2:w'  # Ajusta el rango según donde tengas las URLs y los IDs
+
+# Define el rango inicial, en este caso la columna W y puedes continuar con las siguientes columnas.
+RANGE_NAME2 = 'Verificador!v2:AA'  # Desde W2 hasta AA (ajústalo como desees)
+
 creds = service_account.Credentials.from_service_account_file(KEY, scopes=SCOPES2)
 service = build('sheets', 'v4', credentials=creds)
 sheet = service.spreadsheets()
@@ -49,88 +52,84 @@ values = result.get('values', [])
 if not values:
     print("No se encontraron datos en la hoja de Google Sheets.")
 else:
-    # Convertimos los datos en un diccionario {ID: URL}
-    urls = {row[0]: row[0] for row in values if len(row) > 0}
+    # Crear un diccionario que tiene las URLs de todas las columnas.
+    urls = {f"Columna_{chr(87 + i)}": [row[i] for row in values if len(row) > i] for i in range(len(values[0]))}
+
 chrome_options = Options()
-chrome_options.add_argument("--headless")  # Ver el Navegador
+chrome_options.add_argument("--headless")  # Sin ver el navegador
 chrome_options.add_argument("--window-size=1920x1080")
+
 start_time = time.time()  # Tiempo de inicio de la ejecución
-driver = webdriver.Chrome(options=chrome_options) 
+driver = webdriver.Chrome(options=chrome_options)
 
-
-results = []
-
-for sku_key, url in urls.items():
-    driver.get(url)
-    precio_oferta = "0"
-    precio_normal = "0"
-    time.sleep(3)
-    try:
-        # Intenta obtener el precio de oferta
-        precio_oferta_element = driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]') #Cambiar
-        precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
-    except NoSuchElementException:
-        pass  # Si no se encuentra el precio de oferta, se continuará con el siguiente bloque de código
-
-    try:
-        # Intenta obtener el precio normal
-        precio_normal_element = driver.find_element("class name", 'andes-money-amount__fraction') #Cambiar
-        precio_normal = precio_normal_element.text  # Guarda el precio normal
-    except NoSuchElementException:
-        pass  # Si no se encuentra el precio normal, se continuará con el siguiente bloque de código
-
-    if precio_oferta == "0" and precio_normal == "0":
+# Iterar sobre las columnas (por ejemplo: W, X, Y, Z, AA, etc.)
+for column_name, column_urls in urls.items():
+    results = []  # Asegúrate de que los resultados estén vacíos al empezar cada columna
+    for sku_key, url in enumerate(column_urls, 1):  # Iterar sobre las URLs
+        driver.get(url)
+        precio_oferta = "0"
+        precio_normal = "0"
+        time.sleep(3)
         try:
-            # Si no se puede encontrar ni el precio de oferta ni el precio normal, intenta con el tercer XPath
-            precio_normal_element = driver.find_element("xpath", '/html/body/main/div[1]/div/div[2]/div[3]/p/span[2]') #Cambiar
-            precio_normal = precio_normal_element.text  # Guarda el precio normal
-        except NoSuchElementException as e:
-            print(f"No se pudo encontrar el precio en la URL {url} - {e}")
+            # Intenta obtener el precio de oferta
+            precio_oferta_element =  driver.find_element("class name", 'andes-money-amount__fraction') # Cambiar
+            precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
+        except NoSuchElementException:
+            pass  # Si no se encuentra el precio de oferta, se continúa con el siguiente bloque de código
 
-    data = {
-        "SKU": sku_key,
-        "Precio": precio_normal,
-        "Precio_oferta": precio_oferta
-    }
-    results.append(data)
-    print(data)
-    time.sleep(0.5)
+        try:
+            # Intenta obtener el precio normal
+            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]')  # Cambiar
+            precio_normal = precio_normal_element.text  # Guarda el precio normal
+        except NoSuchElementException:
+            pass  # Si no se encuentra el precio normal, se continúa con el siguiente bloque de código
+
+        if precio_oferta == "0" and precio_normal == "0":
+            try:
+                # Si no se puede encontrar ni el precio de oferta ni el precio normal, intenta con el tercer XPath
+                precio_normal_element = driver.find_element("xpath", '/html/body/main/div[1]/div/div[2]/div[3]/p/span[2]')  # Cambiar
+                precio_normal = precio_normal_element.text  # Guarda el precio normal
+            except NoSuchElementException as e:
+                print(f"No se pudo encontrar el precio en la URL {url} - {e}")
+
+        data = {
+            "URL": url,  # Usamos la URL completa como la primera columna
+            "Precio": precio_normal,
+            "Precio_oferta": precio_oferta
+        }
+        results.append(data)
+        print(data)
+        time.sleep(0.5)
+    
+    # Al final de cada columna, actualiza los datos en Google Sheets
+    values_to_insert = [[item['URL'], item['Precio'], item['Precio_oferta']] for item in results]
+    result = sheet.values().update(
+        spreadsheetId=SPREADSHEET_ID2,
+        range=f'precios!A2:C',  # Cambiar según el rango en que desees insertar los datos.
+        valueInputOption='USER_ENTERED',
+        body={'values': values_to_insert}
+    ).execute()
+    print(f"Datos de la columna {column_name} insertados correctamente")
+
 driver.quit()
 
-
-
-df = pd.DataFrame(results)
-
-# Guardar el DataFrame en un archivo Excel
-# nombre_archivo = "datos_productos.xlsx"  # Nombre del archivo Excel
-# df.to_excel(nombre_archivo, index=False)  # El parámetro index=False evita que se incluyan los índices en el archivo Excel
-# print(f"Datos guardados en {nombre_archivo}")
-
-
-end_time = time.time()  # Tiempo de finalización de la ejecución
+# Calcular el tiempo de ejecución
+end_time = time.time()
 execution_time = end_time - start_time
 print("Tiempo de ejecución: %.2f segundos" % execution_time)
 
-#Fecha de Extraccion
+# Fecha de extracción
 now = datetime.datetime.now()
 now_str = now.strftime('%Y-%m-%d %H:%M:%S')
-data = {"":now_str}
+data = {"": now_str}
 json_data = json.dumps(data)
 values = [[json_data]]
-result = sheet.values().update(spreadsheetId=SPREADSHEET_ID,
-							range='meli!F2',#CAMBIAR
-							valueInputOption='USER_ENTERED',
-							body={'values':values}).execute()
-
-
-#Valores que se pasan a Sheets
-values = [[item['SKU'], item['Precio'],item['Precio_oferta']]for item in results]
-result = sheet.values().update(spreadsheetId=SPREADSHEET_ID,
-							range='meli!A2:C',#CAMBIAR
-							valueInputOption='USER_ENTERED',
-							body={'values':values}).execute()
-print(f"Datos insertados correctamente")
-
+result = sheet.values().update(
+    spreadsheetId=SPREADSHEET_ID2,
+    range='precios!F2',  # Cambiar el rango según tu hoja
+    valueInputOption='USER_ENTERED',
+    body={'values': values}
+).execute()
 
 
 # competitor = "Mercado Libre"  # Cambiar 
