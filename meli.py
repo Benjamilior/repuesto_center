@@ -25,6 +25,7 @@ elif platform.system() == "Darwin":  # 'Darwin' es el nombre del sistema operati
     PATH = "/usr/local/bin/chromedriver"
 else:
     raise EnvironmentError("Sistema operativo no compatible")
+
 #Google Sheets
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 KEY = 'key.json' #Cambiar check
@@ -53,7 +54,17 @@ if not values:
     print("No se encontraron datos en la hoja de Google Sheets.")
 else:
     # Crear un diccionario que tiene las URLs de todas las columnas.
-    urls = {f"Columna_{chr(87 + i)}": [row[i] for row in values if len(row) > i] for i in range(len(values[0]))}
+    urls = {
+    f"Columna_{chr(87 + i)}": [
+        row[i] if len(row) > i and row[i] != "" else None  # Asegúrate de manejar celdas vacías
+        for row in values
+    ]
+    for i in range(max(len(row) for row in values))  # Calcula el número máximo de columnas
+}
+
+# Filtra valores nulos de cada lista para evitar procesar entradas vacías
+urls = {key: [url for url in urls_list if url] for key, urls_list in urls.items()}
+
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")  # Sin ver el navegador
@@ -79,7 +90,7 @@ for column_name, column_urls in urls.items():
 
         try:
             # Intenta obtener el precio normal
-            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]')  # Cambiar
+            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[3]/div/div[1]/div[1]/span[1]/span/span[2]')  # Cambiar
             precio_normal = precio_normal_element.text  # Guarda el precio normal
         except NoSuchElementException:
             pass  # Si no se encuentra el precio normal, se continúa con el siguiente bloque de código
@@ -101,15 +112,21 @@ for column_name, column_urls in urls.items():
         print(data)
         time.sleep(0.5)
     
-    # Al final de cada columna, actualiza los datos en Google Sheets
+   # Calcular el rango basado en la columna actual
+    column_index = 1 + (list(urls.keys()).index(column_name) * 3)  # Incrementar cada 3 columnas
+    start_col = chr(64 + column_index)  # Convertir índice numérico a letra (ej.: 1 -> A, 2 -> B)
+    end_col = chr(64 + column_index + 2)  # Incrementar 2 para abarcar URL, Precio, Precio_oferta
+
+# Escribir datos en las columnas correctas
+    range_to_write = f'precios!{start_col}2:{end_col}'  # Escribir desde la fila 2 en adelante
     values_to_insert = [[item['URL'], item['Precio'], item['Precio_oferta']] for item in results]
     result = sheet.values().update(
-        spreadsheetId=SPREADSHEET_ID2,
-        range=f'precios!A2:C',  # Cambiar según el rango en que desees insertar los datos.
-        valueInputOption='USER_ENTERED',
-        body={'values': values_to_insert}
-    ).execute()
-    print(f"Datos de la columna {column_name} insertados correctamente")
+    spreadsheetId=SPREADSHEET_ID2,
+    range=range_to_write,
+    valueInputOption='USER_ENTERED',
+    body={'values': values_to_insert}
+).execute()
+
 
 driver.quit()
 
@@ -126,7 +143,7 @@ json_data = json.dumps(data)
 values = [[json_data]]
 result = sheet.values().update(
     spreadsheetId=SPREADSHEET_ID2,
-    range='precios!F2',  # Cambiar el rango según tu hoja
+    range='precios!A1',  # Cambiar el rango según tu hoja
     valueInputOption='USER_ENTERED',
     body={'values': values}
 ).execute()
