@@ -42,7 +42,7 @@ KEY = 'key.json'
 SPREADSHEET_ID2 = '1UNIN1rfq_gkMHttQAvd8LRT9j4mI6QX06coQuu-BsgU'
 
 # Define el rango inicial, en este caso la columna W y puedes continuar con las siguientes columnas.
-RANGE_NAME2 = 'Verificador!v181:AB359'  # Desde W2 hasta AB
+RANGE_NAME2 = 'Verificador!v2:v718'  # Desde W2 hasta AB
 
 creds = service_account.Credentials.from_service_account_file(KEY, scopes=SCOPES2)
 service = build('sheets', 'v4', credentials=creds)
@@ -73,79 +73,78 @@ chrome_options.add_argument("--window-size=1920x1080")
 start_time = time.time()  # Tiempo de inicio de la ejecución
 driver = webdriver.Chrome(options=chrome_options)
 
-# Iterar sobre las columnas (por ejemplo: W, X, Y, Z, AA, etc.)
+# Iterar sobre las columnas 
 for column_name, column_urls in urls.items():
     results = []  # Asegúrate de que los resultados estén vacíos al empezar cada columna
     for sku_key, url in enumerate(column_urls, 1):  # Iterar sobre las URLs
         driver.get(url)
         precio_oferta = "0"
         precio_normal = "0"
-        time.sleep(3)
-      
+        time.sleep(1)
+   
         try:
-            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[7]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span') # Cambiar
-            precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
-        except NoSuchElementException:
-            pass
-        try:
-            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]') # Cambiar
-            precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
-        except NoSuchElementException:
-            pass
-        try:
-            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[3]/div/div[1]/div[1]/span[1]/span/span[2]') # Cambiar
+            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[2]/div/div/div[2]/div') # Cambiar
             precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
         except NoSuchElementException:
             pass
         try:
             # Intenta obtener el precio de oferta
-            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span/span[2]') # Cambiar
+            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[2]/div/div/div[2]/div') # Cambiar
             precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
         except NoSuchElementException:
             pass
-        
         try:
-            # Intenta obtener el precio de oferta
-            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div/div[1]/div/div[3]/div/div[1]/div[1]/span[1]/span/span[2]') # Cambiar
+            precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[1]/div/div[2]/div/div/div[2]/div') # Cambiar
             precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
         except NoSuchElementException:
-            pass# Si no se encuentra el precio de oferta, se continúa con el siguiente bloque de código
-        try:
-            # Intenta obtener el precio normal
-            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span/span[2]')  # Cambiar
-            precio_normal = precio_normal_element.text  # Guarda el precio normal
-        except NoSuchElementException:
             pass
-        try:
-            # Intenta obtener el precio normal
-            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[7]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]')  # Cambiar
-            precio_normal = precio_normal_element.text  # Guarda el precio normal
-        except NoSuchElementException:
-            pass
-        try:
-            # Intenta obtener el precio normal
-            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[7]/div[2]/div[1]/div/div[1]/div/div[3]/div/div[1]/div[1]/span[1]/span/span[2]')  # Cambiar
-            precio_normal = precio_normal_element.text  # Guarda el precio normal
-        except NoSuchElementException:
-            pass
-        try:
-            # Intenta obtener el precio normal
-            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]')  # Cambiar
-            precio_normal = precio_normal_element.text  # Guarda el precio normal
-        except NoSuchElementException:
-            pass
-        try:
-            # Intenta obtener el precio normal
-            precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span/span[2]')  # Cambiar
-            precio_normal = precio_normal_element.text  # Guarda el precio normal
-        except NoSuchElementException:
-            pass
+        # try:
+        #     precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[3]/div/div[1]/div[1]/span[1]/span/span[2]') # Cambiar
+        #     precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
+        # except NoSuchElementException:
+        #     pass
+        # try:
+        #     # Intenta obtener el precio normal
+        #     precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span/span[2]')  # Cambiar
+        #     precio_normal = precio_normal_element.text  # Guarda el precio normal
+        # except NoSuchElementException:
+        #     pass
+        # try:
+        #     # Intenta obtener el precio de oferta
+        #     precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div/div[1]/div/div[3]/div/div[1]/div[1]/span[1]/span/span[2]') # Cambiar
+        #     precio_oferta = precio_oferta_element.text  # Guarda el precio de oferta
+        # except NoSuchElementException:
+        #     pass# Si no se encuentra el precio de oferta, se continúa con el siguiente bloque de código
+        # try:
+        #     # Intenta obtener el precio normal
+        #     precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span/span[2]')  # Cambiar
+        #     precio_normal = precio_normal_element.text  # Guarda el precio normal
+        # except NoSuchElementException:
+        #     pass
+        # try:
+        #     # Intenta obtener el precio normal
+        #     precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[7]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]')  # Cambiar
+        #     precio_normal = precio_normal_element.text  # Guarda el precio normal
+        # except NoSuchElementException:
+        #     pass
+        # try:
+        #     # Intenta obtener el precio normal
+        #     precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[7]/div[2]/div[1]/div/div[1]/div/div[3]/div/div[1]/div[1]/span[1]/span/span[2]')  # Cambiar
+        #     precio_normal = precio_normal_element.text  # Guarda el precio normal
+        # except NoSuchElementException:
+        #     pass
+        # try:
+        #     # Intenta obtener el precio normal
+        #     precio_normal_element =driver.find_element("xpath", '/html/body/main/div[2]/div[6]/div[2]/div[1]/div[1]/div/div[2]/div/div[1]/div[1]/span/span/span[2]')  # Cambiar
+        #     precio_normal = precio_normal_element.text  # Guarda el precio normal
+        # except NoSuchElementException:
+        #     pass
         
 
         if precio_oferta == "0" and precio_normal == "0":
             try:
                 # Si no se puede encontrar ni el precio de oferta ni el precio normal, intenta con el tercer XPath
-                precio_normal_element = driver.find_element("class name", 'andes-money-amount__fraction')  # Cambiar
+                precio_normal_element = driver.find_element("xpath", '/html/body/main/div[2]/div[5]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[2]/div/div')  # Cambiar
                 precio_normal = precio_normal_element.text  # Guarda el precio normal
             except NoSuchElementException as e:
                 print(f"No se pudo encontrar el precio en la URL {url} - {e}")
@@ -165,7 +164,7 @@ for column_name, column_urls in urls.items():
     end_col = chr(64 + column_index + 2)  # Incrementar 2 para abarcar URL, Precio, Precio_oferta
 
 # Escribir datos en las columnas correctas
-    range_to_write = f'precios2!{start_col}2:{end_col}'  # Escribir desde la fila 2 en adelante
+    range_to_write = f'lugar!{start_col}2:{end_col}'  # Escribir desde la fila 2 en adelante
     values_to_insert = [[item['URL'], item['Precio'], item['Precio_oferta']] for item in results]
     result = sheet.values().update(
     spreadsheetId=SPREADSHEET_ID2,
@@ -190,7 +189,7 @@ json_data = json.dumps(data)
 values = [[json_data]]
 result = sheet.values().update(
     spreadsheetId=SPREADSHEET_ID2,
-    range='precios2!A1',  # Cambiar el rango según tu hoja
+    range='lugar!A1',  # Cambiar el rango según tu hoja
     valueInputOption='USER_ENTERED',
     body={'values': values}
 ).execute()
