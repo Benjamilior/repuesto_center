@@ -42,7 +42,7 @@ KEY = 'key.json'
 SPREADSHEET_ID2 = '1UNIN1rfq_gkMHttQAvd8LRT9j4mI6QX06coQuu-BsgU'
 
 # RANGE_NAME2 = 'Verificador!v2:AB180' # Desde W2 hasta AA (ajústalo como desees)
-RANGE_NAME2 = 'Verificador!v2:AB180'
+RANGE_NAME2 = 'Verificador!V2:AB180'
 
 creds = service_account.Credentials.from_service_account_file(KEY, scopes=SCOPES2)
 service = build('sheets', 'v4', credentials=creds)
@@ -80,7 +80,7 @@ for column_name, column_urls in urls.items():
         driver.get(url)
         precio_oferta = "0"
         precio_normal = "0"
-        time.sleep(3)
+        time.sleep(5)
         
         try:
             precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[7]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span') # Cambiar

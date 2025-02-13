@@ -80,7 +80,7 @@ for column_name, column_urls in urls.items():
         driver.get(url)
         precio_oferta = "0"
         precio_normal = "0"
-        time.sleep(3)
+        # time.sleep(3)
      
         try:
             precio_oferta_element =  driver.find_element("xpath", '/html/body/main/div[2]/div[7]/div[2]/div[1]/div/div[1]/div/div[2]/div/div[1]/div[1]/span[1]/span') # Cambiar
